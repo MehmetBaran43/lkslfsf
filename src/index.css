@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  
+  --color-navy-800: #1E293B;
+  --color-navy-900: #0F172A;
+  --color-navy-950: #020617;
+  
+  --color-huzuryellow-400: #FBBF24;
+  --color-huzuryellow-500: #F59E0B;
+}
+
+@layer base {
+  body {
+    @apply bg-navy-950 text-slate-200 overflow-x-hidden antialiased;
+  }
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.glass-panel {
+  @apply bg-navy-900/60 backdrop-blur-xl border border-white/5;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+.progress-bar-fill {
+  animation: progress 10s linear forwards;
+}

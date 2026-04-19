@@ -1,0 +1,11 @@
+{
+  "name": "Huzur Vakit",
+  "description": "Namaz vakitleri, dualar, zikirmatik ve yapay zeka destekli dini asistan uygulaması.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "AI Assistant",
+    "Real-time Data"
+  ]
+}
