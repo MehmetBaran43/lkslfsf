@@ -41,20 +41,11 @@ export default function App() {
   const [sehir, setSehir] = useState('Istanbul');
   const [currentTime, setCurrentTime] = useState(new Date());
   
-  // Pro & AdMob Mock
-  const [isPro, setIsPro] = useState(false);
+  // AdMob Mock
   const [showAd, setShowAd] = useState(false);
   const [adTimer, setAdTimer] = useState(0);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   
-  // Payment State
-  const [paymentStep, setPaymentStep] = useState(0);
-  const [cardNum, setCardNum] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardError, setCardError] = useState('');
-
   // Settings
   const [selectedAdhanName, setSelectedAdhanName] = useState('İstanbul');
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -107,7 +98,7 @@ export default function App() {
   };
 
   const handleTabChange = (tab: string) => {
-    if (!isPro && tab !== 'pro' && tab !== activeTab) {
+    if (tab !== activeTab) {
       setTabSwitchCount(prev => {
         if (prev + 1 >= 5) {
           setShowAd(true);
@@ -190,23 +181,8 @@ export default function App() {
     }
   };
 
-  const handlePaySubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setCardError('');
-    if (cardNum.length < 16) {
-      setCardError('Kart numarası geçersiz.');
-      return;
-    }
-    setPaymentStep(2);
-    setTimeout(() => {
-      setPaymentStep(3);
-      setIsPro(true);
-      setTimeout(() => { setActiveTab('vakitler'); setPaymentStep(0); }, 3000);
-    }, 2500);
-  };
-
   // Sub-Components
-  const BannerAd = () => !isPro ? (
+  const BannerAd = () => (
     <div className="w-full rounded-[2rem] overflow-hidden border border-slate-700/50 relative shadow-lg min-h-[60px]">
       <div className="bg-gradient-to-r from-[#0a1628] to-[#0f2040] flex items-center justify-between px-4 h-[60px] gap-3 relative">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -218,18 +194,12 @@ export default function App() {
             <p className="text-slate-500 text-[9px] font-mono truncate">ca-app-pub-3554022053924639/3223907249</p>
           </div>
         </div>
-        <button 
-          onClick={() => handleTabChange('pro')} 
-          className="flex-shrink-0 text-[10px] font-bold text-huzuryellow-400 bg-huzuryellow-400/10 hover:bg-huzuryellow-400/20 px-3 py-1.5 rounded-full border border-huzuryellow-400/30 transition-colors whitespace-nowrap"
-        >
-          Kaldır ✕
-        </button>
         <div className="absolute top-1.5 left-1.5 bg-slate-700/80 text-slate-400 text-[8px] font-bold px-1.5 py-0.5 rounded">
           Ad
         </div>
       </div>
     </div>
-  ) : null;
+  );
 
   const renderTab = () => {
     switch(activeTab) {
@@ -313,20 +283,67 @@ export default function App() {
       case 'zikir':
         return (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-10">
-            <div className="w-72 h-72 border-[12px] border-navy-900 rounded-full flex flex-col items-center justify-center relative shadow-[inset_0_0_80px_rgba(0,0,0,0.6)] bg-navy-950">
-              <span className="text-8xl font-serif font-bold text-huzuryellow-400 drop-shadow-lg">{zikirCount}</span>
-              <span className="text-xs text-slate-500 font-bold tracking-widest mt-4 uppercase">{Math.floor(zikirCount/33)}. Tur</span>
+            <div className="w-80 h-80 relative flex items-center justify-center">
+              {/* Progress Dots */}
+              <div className="absolute inset-0">
+                {[...Array(33)].map((_, i) => {
+                  const angle = (i * 360) / 33 - 90;
+                  const radius = 150;
+                  const x = Math.cos((angle * Math.PI) / 180) * radius;
+                  const y = Math.sin((angle * Math.PI) / 180) * radius;
+                  const isActive = (zikirCount % 33) > i || (zikirCount > 0 && zikirCount % 33 === 0 && i === 32);
+                  
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={false}
+                      animate={{ 
+                        scale: isActive ? 1.2 : 1,
+                        backgroundColor: isActive ? "#FFFFFF" : "#1E293B",
+                        boxShadow: isActive ? "0 0 10px rgba(255,255,255,0.8)" : "none"
+                      }}
+                      className="absolute w-2 h-2 rounded-full"
+                      style={{ 
+                        left: `calc(50% + ${x}px - 4px)`,
+                        top: `calc(50% + ${y}px - 4px)`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Main Counter Circle */}
+              <div className="w-64 h-64 border-[8px] border-navy-900 rounded-full flex flex-col items-center justify-center relative shadow-[inset_0_0_60px_rgba(0,0,0,0.6)] bg-navy-950 z-10">
+                <AnimatePresence mode="wait">
+                  <motion.span 
+                    key={zikirCount}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="text-7xl font-serif font-bold text-huzuryellow-400 drop-shadow-lg"
+                  >
+                    {zikirCount}
+                  </motion.span>
+                </AnimatePresence>
+                <span className="text-[10px] text-slate-500 font-bold tracking-[0.2em] mt-2 uppercase">
+                  {Math.floor(zikirCount / 33) + 1}. TUR
+                </span>
+              </div>
             </div>
+
             <div className="flex gap-8 mt-16">
               <button 
                 onClick={() => setZikirCount(0)} 
                 className="w-16 h-16 rounded-full bg-navy-900 flex items-center justify-center text-slate-500 border border-slate-800 hover:text-white transition-colors"
+                title="Sıfırla"
               >
                 <Icon name={RotateCcw} />
               </button>
               <button 
-                onClick={() => setZikirCount(c => c+1)} 
-                className="w-28 h-28 rounded-full bg-huzuryellow-400 flex items-center justify-center text-navy-950 shadow-[0_0_40px_rgba(251,191,36,0.4)] active:scale-90 transition-transform"
+                onClick={() => {
+                  setZikirCount(c => c + 1);
+                  // Haptic feedback mock (vibration could be added here for mobile)
+                }} 
+                className="w-28 h-28 rounded-full bg-huzuryellow-400 flex items-center justify-center text-navy-950 shadow-[0_0_40px_rgba(251,191,36,0.3)] active:scale-95 transition-all"
               >
                 <Icon name={Plus} size={48} />
               </button>
@@ -421,68 +438,6 @@ export default function App() {
           </motion.div>
         );
 
-      case 'pro':
-        return (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-            {paymentStep === 0 && (
-              <div className="bg-gradient-to-br from-huzuryellow-400 to-huzuryellow-500 rounded-[4rem] p-10 text-navy-950 shadow-[0_20px_50px_-12px_rgba(251,191,36,0.4)] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
-                <h2 className="text-4xl font-serif font-bold mb-3 relative z-10">Huzur Vakit Pro</h2>
-                <p className="text-sm font-bold opacity-80 mb-10 relative z-10">Manevi rehberinizde sınırları kaldırın.</p>
-                <ul className="space-y-5 mb-12 relative z-10">
-                  <li className="flex items-center gap-4 font-bold text-base"><span className="w-8 h-8 rounded-full bg-navy-950 text-huzuryellow-400 flex items-center justify-center"><Check size={16}/></span> Tüm Reklamları Kaldır</li>
-                  <li className="flex items-center gap-4 font-bold text-base"><span className="w-8 h-8 rounded-full bg-navy-950 text-huzuryellow-400 flex items-center justify-center"><Check size={16}/></span> Gelişmiş Gerçek Yapay Zeka</li>
-                </ul>
-                <div className="text-center bg-white/30 p-8 rounded-[3rem] mb-8 relative z-10 backdrop-blur-sm border border-white/40">
-                  <span className="text-xs font-bold uppercase tracking-widest opacity-80 block mb-2">Ömür Boyu Lisans</span>
-                  <span className="text-6xl font-serif font-bold tracking-tighter">99 TL</span>
-                </div>
-                <button onClick={() => setPaymentStep(1)} className="w-full py-5 bg-navy-950 text-white rounded-[2rem] font-bold shadow-2xl text-lg flex items-center justify-center gap-3">
-                  <Crown size={20} className="text-huzuryellow-400" /> Şimdi Yükselt
-                </button>
-              </div>
-            )}
-            
-            {paymentStep === 1 && (
-              <div className="glass-panel rounded-[3rem] p-8 border border-slate-700">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-serif font-bold text-white">Ödeme Yap</h2>
-                  <span className="text-huzuryellow-400 font-bold text-xl">₺99,00</span>
-                </div>
-                <form onSubmit={handlePaySubmit} className="space-y-5">
-                  <input required placeholder="AD SOYAD" className="w-full bg-navy-950 border-2 border-slate-800 focus:border-huzuryellow-400 rounded-2xl px-5 py-4 text-white outline-none" value={cardName} onChange={e => setCardName(e.target.value)} />
-                  <input required placeholder="KART NUMARASI" className="w-full bg-navy-950 border-2 border-slate-800 focus:border-huzuryellow-400 rounded-2xl px-5 py-4 text-white outline-none font-mono" value={cardNum} onChange={e => setCardNum(e.target.value.replace(/\D/g, ''))} maxLength={16} />
-                  <div className="grid grid-cols-2 gap-4">
-                    <input required placeholder="AA/YY" className="w-full bg-navy-950 border-2 border-slate-800 focus:border-huzuryellow-400 rounded-2xl px-5 py-4 text-white outline-none" value={cardExpiry} onChange={e => setCardExpiry(e.target.value)} />
-                    <input required placeholder="CVV" className="w-full bg-navy-950 border-2 border-slate-800 focus:border-huzuryellow-400 rounded-2xl px-5 py-4 text-white outline-none" value={cardCvv} onChange={e => setCardCvv(e.target.value)} maxLength={4} />
-                  </div>
-                  {cardError && <div className="text-red-400 text-xs flex items-center gap-2"><AlertCircle size={14}/> {cardError}</div>}
-                  <button type="submit" className="w-full py-5 bg-huzuryellow-400 text-navy-950 rounded-[2rem] font-bold text-xl shadow-lg">₺99,00 Öde</button>
-                  <button type="button" onClick={() => setPaymentStep(0)} className="w-full text-slate-500 font-bold text-sm">Geri</button>
-                </form>
-              </div>
-            )}
-
-            {paymentStep === 2 && (
-              <div className="flex flex-col items-center justify-center py-24">
-                <Loader size={48} className="animate-spin text-huzuryellow-400 mb-8" />
-                <h2 className="text-2xl font-bold text-white mb-2">Ödeme İşleniyor...</h2>
-                <p className="text-slate-400">Lütfen bekleyiniz.</p>
-              </div>
-            )}
-
-            {paymentStep === 3 && (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <div className="w-32 h-32 bg-green-500 text-white rounded-full flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(34,197,94,0.3)]">
-                  <Check size={64} />
-                </div>
-                <h2 className="text-4xl font-serif font-bold text-white mb-4">Hoş Geldiniz!</h2>
-                <p className="text-slate-400 font-medium">Huzur Vakit Pro artık aktif.</p>
-              </div>
-            )}
-          </motion.div>
-        );
-
       default:
         return null;
     }
@@ -492,7 +447,7 @@ export default function App() {
     <div className="max-w-md mx-auto min-h-screen flex flex-col p-6 relative bg-navy-950 font-sans">
       <header className="flex justify-center items-center mb-10 pt-4">
         <h1 className="text-3xl font-serif font-bold text-huzuryellow-400 italic drop-shadow-md">
-          Huzur Vakit {isPro && <span className="text-navy-950 text-[10px] bg-huzuryellow-400 px-2 py-0.5 rounded-full ml-1 not-italic align-middle shadow-lg font-bold tracking-widest">PRO</span>}
+          Huzur Vakit
         </h1>
       </header>
 
@@ -511,14 +466,13 @@ export default function App() {
           { id: 'zikir', icon: Fingerprint },
           { id: 'ai', icon: MessageSquare },
           { id: 'settings', icon: Settings },
-          ...(!isPro ? [{ id: 'pro', icon: Crown, color: 'text-huzuryellow-400' }] : [])
         ].map(tab => (
           <button 
             key={tab.id}
             onClick={() => handleTabChange(tab.id)} 
             className={cn(
               "p-3 rounded-full transition-all duration-400 flex-shrink-0",
-              activeTab === tab.id ? "bg-huzuryellow-400 text-navy-950 shadow-[0_10px_25px_-5px_rgba(251,191,36,0.4)] scale-110 -translate-y-1" : (tab.color || "text-slate-400 hover:text-white")
+              activeTab === tab.id ? "bg-huzuryellow-400 text-navy-950 shadow-[0_10px_25px_-5px_rgba(251,191,36,0.4)] scale-110 -translate-y-1" : "text-slate-400 hover:text-white"
             )}
           >
             <tab.icon size={22} />
@@ -528,7 +482,7 @@ export default function App() {
 
       {/* Interstitial Mockup */}
       <AnimatePresence>
-        {showAd && !isPro && (
+        {showAd && (
           <motion.div 
             initial={{ scale: 0.95, opacity: 0 }} 
             animate={{ scale: 1, opacity: 1 }} 
@@ -565,18 +519,6 @@ export default function App() {
               )}
             </div>
             {adTimer > 0 && <div className="h-1 w-full bg-slate-800"><div className="h-full bg-huzuryellow-400 progress-bar-fill"></div></div>}
-            <div className="bg-navy-900 border-t border-slate-800 p-5 flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <h3 className="text-white font-bold text-base mb-0.5">Reklamları kaldırmak ister misiniz?</h3>
-                <p className="text-slate-500 text-xs">Gelişmiş özellikleri keşfedin.</p>
-              </div>
-              <button 
-                onClick={() => { setShowAd(false); handleTabChange('pro'); }} 
-                className="flex-shrink-0 bg-huzuryellow-400 text-navy-950 px-5 py-3 rounded-full font-bold shadow-lg text-sm whitespace-nowrap hover:scale-105 active:scale-95 transition-transform"
-              >
-                PRO'YA GEÇ
-              </button>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

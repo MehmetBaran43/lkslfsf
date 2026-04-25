@@ -1,0 +1,16 @@
+{
+  "name": "Huzur Vakit",
+  "short_name": "Huzur",
+  "description": "Namaz vakitleri ve manevi rehberiniz.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#FBBF24",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2913/2913520.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
